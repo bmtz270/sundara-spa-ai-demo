@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Sundara Spa AI Chat Demo</title>
+</head>
+<body>
+  <h2>Sundara Spa – AI Booking Assistant (Demo)</h2>
+  <p>This is a live demo chatbot that helps book appointments and capture leads.</p>
+  <p><strong>Deployment comes next.</strong></p>
+</body>
+</html>

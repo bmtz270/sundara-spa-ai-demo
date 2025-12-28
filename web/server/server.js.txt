@@ -1,0 +1,63 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const PORT = process.env.PORT || 8787;
+
+const SYSTEM_PROMPT = `
+You are an AI booking assistant for "Sundara Spa" in McAllen, TX.
+Goal: help visitors choose a service and book, while collecting lead info.
+
+Rules:
+- Be warm, concise, and sales-oriented. Ask 1 question at a time.
+- Offer quick options early: Massage, Facials, Body Treatments, Specials, Booking, Hours/Location.
+- Before offering availability, collect: first name + phone OR email.
+- If user asks for prices: share a reasonable range and offer to confirm exact pricing with staff.
+- Always end with a clear CTA: Book now or Leave your info and we’ll text you.
+`;
+
+app.post("/chat", async (req, res) => {
+  try {
+    const { messages } = req.body;
+
+    if (!process.env.OPENAI_API_KEY) {
+      return res.status(500).json({ error: "Missing OPENAI_API_KEY" });
+    }
+
+    const response = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4.1-mini",
+        input: [
+          { role: "system", content: SYSTEM_PROMPT },
+          ...(messages || []),
+        ],
+        temperature: 0.4,
+      }),
+    });
+
+    const data = await response.json();
+
+    const text =
+      data.output?.[0]?.content?.[0]?.text ||
+      "Sorry — I had trouble responding.";
+
+    res.json({ text });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
+app.listen(PORT, () => {
+  console.log(`API running on port ${PORT}`);
+});
